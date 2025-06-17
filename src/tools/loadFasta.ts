@@ -1,28 +1,34 @@
-import { defineTool } from "@modelcontextprotocol/sdk";
 import { z } from "zod";
-import { parseFasta } from "../utils/fastaParser";
+import { parseFasta } from "../utils/fastaParser.js";
 import { readFile } from "fs/promises";
 
-export const loadFasta = defineTool({
-  name: "load_fasta",
-  description: "Load a FASTA file and parse into sequence records",
-  params: z.object({
-    path: z.string()
-  }),
-  result: z.object({
-    records: z.array(z.object({
-      id: z.string(),
-      description: z.string(),
-      length: z.number()
-    }))
-  }),
-  async run({ path }) {
+export const loadFasta = {
+  definition: {
+    name: "load_fasta",
+    description: "Load a FASTA file and parse into sequence records",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: {
+          type: "string",
+          description: "Path to the FASTA file"
+        }
+      },
+      required: ["path"]
+    },
+  },
+  async handler({ path }: { path: string }) {
     const raw = await readFile(path, "utf-8");
     const records = parseFasta(raw).map(r => ({
       id: r.id,
       description: r.description,
       length: r.sequence.length
     }));
-    return { records };
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({ records }, null, 2)
+      }]
+    };
   }
-});
+};

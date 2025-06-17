@@ -1,11 +1,61 @@
-import { createServer } from "@modelcontextprotocol/sdk";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
 import { loadFasta } from "./tools/loadFasta.js";
 import { summarizeFasta } from "./tools/summarizeFasta.js";
 import { getSequence } from "./tools/getSequence.js";
 import { filterFasta } from "./tools/filterFasta.js";
 
-const server = createServer({
-  tools: [loadFasta, summarizeFasta, getSequence, filterFasta]
+const server = new Server(
+  {
+    name: "mcp-fasta",
+    version: "0.1.0",
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
+  }
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      loadFasta.definition,
+      summarizeFasta.definition,
+      getSequence.definition,
+      filterFasta.definition,
+    ],
+  };
 });
 
-server.listen(3333);
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  
+  if (!args) {
+    throw new Error("Tool arguments are required");
+  }
+  
+  switch (name) {
+    case "load_fasta":
+      return await loadFasta.handler(args as { path: string });
+    case "summarize_fasta":
+      return await summarizeFasta.handler(args as { path: string });
+    case "get_sequence_by_id":
+      return await getSequence.handler(args as { path: string; id: string });
+    case "filter_fasta_by_length":
+      return await filterFasta.handler(args as { path: string; minLength: number; maxLength: number });
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+});
+
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+main().catch(console.error);
