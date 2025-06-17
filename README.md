@@ -8,6 +8,16 @@ A Model Context Protocol (MCP) server for working with FASTA files in VS Code wi
 - **Summarize sequences** - Get statistics about sequence lengths and counts
 - **Fetch specific sequences** - Retrieve individual sequences by ID
 - **Filter by length** - Find sequences within specified length ranges
+- **Write FASTA files** - Create new FASTA files from sequence data
+- **Validate sequences** - Check sequence format and composition
+- **Reverse complement** - Generate reverse complement of DNA sequences
+- **Translate sequences** - Convert DNA to protein using genetic codes
+- **Search patterns** - Find motifs, patterns, or subsequences
+- **Calculate GC content** - Analyze nucleotide composition and GC content
+- **Split FASTA files** - Divide large files into smaller chunks
+- **Merge FASTA files** - Combine multiple files with duplicate handling
+- **Extract subsequences** - Extract regions by coordinates
+- **Find duplicates** - Identify duplicate sequences by ID or content
 
 ## Installation
 
@@ -56,6 +66,81 @@ The server is automatically configured for VS Code with Claude. Once built, the 
      - `maxLength` (number) - Maximum sequence length
    - **Output**: Array of matching sequences with metadata
 
+5. **`write_fasta`** - Write sequences to a FASTA file
+   - **Input**:
+     - `path` (string) - Output path for the FASTA file
+     - `sequences` (array) - Array of sequence objects with `id`, `sequence`, and optional `description`
+   - **Output**: Confirmation message with number of sequences written
+
+6. **`validate_sequence`** - Validate sequences for proper nucleotide/amino acid composition
+   - **Input**:
+     - `path` (string) - Path to the FASTA file
+     - `sequenceType` (enum) - Type to validate: "dna", "rna", "protein", or "auto"
+   - **Output**: Validation results with invalid characters and detected types
+
+7. **`reverse_complement`** - Generate reverse complement of DNA sequences
+   - **Input**:
+     - `path` (string) - Path to the FASTA file
+     - `outputPath` (string, optional) - Output file for reverse complement sequences
+     - `sequenceIds` (array, optional) - Specific sequence IDs to process
+   - **Output**: Reverse complement sequences with statistics
+
+8. **`translate_sequence`** - Translate DNA sequences to protein using genetic code
+   - **Input**:
+     - `path` (string) - Path to the FASTA file
+     - `readingFrame` (number) - Reading frame (1-3 forward, -1 to -3 reverse)
+     - `geneticCode` (string, optional) - Genetic code table ("standard", "vertebrate_mitochondrial", "bacterial")
+     - `outputPath` (string, optional) - Output file for translated sequences
+   - **Output**: Translated protein sequences with statistics
+
+9. **`search_sequence`** - Search for patterns, motifs, or subsequences
+   - **Input**:
+     - `path` (string) - Path to the FASTA file
+     - `pattern` (string) - Search pattern (supports IUPAC codes and regex)
+     - `searchType` (enum) - Type: "exact", "regex", or "iupac"
+     - `caseSensitive` (boolean, optional) - Case sensitivity
+     - `includeReverseComplement` (boolean, optional) - Search reverse strand
+   - **Output**: Match positions and context for all sequences
+
+10. **`calculate_gc_content`** - Calculate GC content and nucleotide statistics
+    - **Input**:
+      - `path` (string) - Path to the FASTA file
+      - `windowSize` (number, optional) - Window size for sliding window analysis
+    - **Output**: GC content, nucleotide counts, and optional sliding window data
+
+11. **`split_fasta`** - Split FASTA files into multiple files
+    - **Input**:
+      - `path` (string) - Path to the FASTA file
+      - `splitBy` (enum) - Split method: "count", "size", or "individual"
+      - `value` (number, optional) - Sequences per file or max size in MB
+      - `outputDir` (string) - Output directory
+      - `prefix` (string, optional) - Filename prefix
+    - **Output**: Information about created files
+
+12. **`merge_fasta`** - Merge multiple FASTA files
+    - **Input**:
+      - `inputPaths` (array) - Array of input file paths
+      - `outputPath` (string) - Output merged file path
+      - `removeDuplicates` (boolean, optional) - Remove duplicate sequences
+      - `addFilePrefix` (boolean, optional) - Add filename to sequence IDs
+    - **Output**: Merge statistics and sequence information
+
+13. **`extract_subsequence`** - Extract subsequences by coordinates
+    - **Input**:
+      - `path` (string) - Path to the FASTA file
+      - `coordinates` (array) - Array of extraction coordinates with sequenceId, start, end
+      - `outputPath` (string, optional) - Output file for extracted sequences
+    - **Output**: Extracted subsequences with coordinate information
+
+14. **`find_duplicates`** - Find duplicate sequences
+    - **Input**:
+      - `path` (string) - Path to the FASTA file
+      - `duplicateType` (enum) - Type: "id", "sequence", or "both"
+      - `caseSensitive` (boolean, optional) - Case sensitivity for sequence comparison
+      - `outputDuplicates` (string, optional) - Output file for duplicates
+      - `outputUnique` (string, optional) - Output file for unique sequences
+    - **Output**: Duplicate analysis and grouping information
+
 ### Manual Server Usage
 
 You can also run the server manually:
@@ -83,7 +168,17 @@ src/
 │   ├── loadFasta.ts      # Load and parse FASTA files
 │   ├── summarizeFasta.ts # Generate sequence statistics
 │   ├── getSequence.ts    # Fetch sequences by ID
-│   └── filterFasta.ts    # Filter sequences by length
+│   ├── filterFasta.ts    # Filter sequences by length
+│   ├── writeFasta.ts     # Write sequences to FASTA files
+│   ├── validateSequence.ts # Validate sequence composition
+│   ├── reverseComplement.ts # Generate reverse complement
+│   ├── translateSequence.ts # Translate DNA to protein
+│   ├── searchSequence.ts    # Search patterns and motifs
+│   ├── calculateGC.ts       # Calculate GC content
+│   ├── splitFasta.ts        # Split FASTA files
+│   ├── mergeFasta.ts        # Merge multiple FASTA files
+│   ├── extractSubsequence.ts # Extract by coordinates
+│   └── findDuplicates.ts     # Find duplicate sequences
 └── utils/
     └── fastaParser.ts    # FASTA file parsing utilities
 ```
