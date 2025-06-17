@@ -141,9 +141,29 @@ The server is automatically configured for VS Code with Claude. Once built, the 
       - `outputUnique` (string, optional) - Output file for unique sequences
     - **Output**: Duplicate analysis and grouping information
 
+### Command Line Claude Usage
+
+To use with command line Claude, simply run the startup script from the project directory:
+
+```bash
+./start-claude.sh
+```
+
+This script automatically:
+- Changes to the correct directory
+- Starts Claude with the proper MCP configuration
+- Loads all FASTA tools automatically
+
+Alternatively, you can run Claude manually:
+
+```bash
+cd "/path/to/mcp-fasta"
+claude --mcp-config mcp-config-portable.json
+```
+
 ### Manual Server Usage
 
-You can also run the server manually:
+You can also run the MCP server manually for debugging:
 
 ```bash
 npm start
